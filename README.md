@@ -21,6 +21,7 @@ Potential Field Algorithm:
    robot around crop rows?  
 
 Random Tree Algorithm (RRT/RRT*):  
+This resouce is amazing for visualizing RRT: https://demonstrations.wolfram.com/RapidlyExploringRandomTreeRRTAndRRT/  
  - This one looks useful for exploring an unknown area for weeds, ie Task 3 for FRE.  
  - I do not understand how you would actually apply this without spending 90% of 
    the time backtracking to a previous node or only expanding a time step from the 
