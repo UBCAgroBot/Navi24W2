@@ -1,0 +1,9 @@
+name: nav24w2
+channels:
+  - defaults
+dependencies:
+  - python=3.12
+  - pip
+  - pip:
+    - opencv-python
+    - numpy
