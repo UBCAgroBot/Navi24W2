@@ -94,3 +94,4 @@ The script will:
 - The final path, if found, is highlighted in red.
 
 ## Example Output
+![image](https://github.com/user-attachments/assets/e690086f-286f-4eb0-a482-f5c128e9412c)
