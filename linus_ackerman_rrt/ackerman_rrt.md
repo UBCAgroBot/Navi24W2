@@ -6,6 +6,7 @@ This document outlines an implementation of the RRT algorithm for a robot with *
 
 - Potential Usage From this [Github Repo](https://github.com/ehvenimunis/Ackerman-Vehicle-Simple-Navigation), that even consists of Gazebo
 - Other useful [Github Repo](https://github.com/adarsh2798/Fast-RRT-for-motion-planning-of-autonomous-vehicles) about Ackerman algorithm
+- [Research Document](https://docs.google.com/document/d/1w6LAwQoav9d1Kn71S3fcBDMe9Q68AOpas56-qQEHq1k/edit?usp=sharing)
 
 ---
 

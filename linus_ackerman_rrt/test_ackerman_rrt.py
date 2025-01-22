@@ -8,7 +8,7 @@ obstacles = [
 ]
 bounds = (0, 0, 100, 100)
 
-ackerman_rrt = AckermanRRT(start=start, goal=goal, obstacles=obstacles, bounds=bounds, step_size=5, max_iter=2000)
+ackerman_rrt = AckermanRRT(start=start, goal=goal, obstacles=obstacles, bounds=bounds, step_size=10, max_iter=2000)
 
 if ackerman_rrt.plan():
     print("Path found!")
