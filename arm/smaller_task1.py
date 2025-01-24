@@ -71,7 +71,6 @@ while True:
         bug_move_up()
         maze_image = display_maze(maze)
         cv2.imshow("Maze", maze_image)
-        print(robot_pos)
     elif key == 27:
         break
 
