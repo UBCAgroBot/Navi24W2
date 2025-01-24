@@ -3,7 +3,7 @@ import cv2
 
 SQUARE_LENGTH = 50
 
-# (0 = empty space, 1 = obstacle, 2 = punishment zone, 3 = robot)
+# (0 = empty space, 1 = obstacle, 2 = robot, 3 = goal)
 maze = np.zeros((25, 25))
 
 for i in range(3, 10):
@@ -18,7 +18,7 @@ for i in range(5, 15):
 
 robot_pos = (5, 20)
 # Add robot in the last crop row
-maze[robot_pos[1], robot_pos[0]] = 3
+maze[robot_pos[1], robot_pos[0]] = 2
 
 def display_maze(maze):
     maze_image = np.zeros((maze.shape[0]*SQUARE_LENGTH, maze.shape[1]*SQUARE_LENGTH, 3), dtype=np.uint8)
@@ -29,9 +29,9 @@ def display_maze(maze):
             elif maze[i, j] == 1:
                 color = (0, 0, 0) # Obstacle should be black
             elif maze[i, j] == 2:
-                color = (203, 195, 227) # Punishment zone should be brown
-            elif maze[i, j] == 3:
                 color = (0, 0, 255) # Robot should be red
+            elif maze[i, j] == 3:
+                color = (0, 255, 0)
             else:
                 color = (191, 64, 191) # Fallback on purple color
 
