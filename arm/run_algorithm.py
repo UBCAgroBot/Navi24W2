@@ -1,4 +1,3 @@
-from enum import EnumCheck
 import numpy as np
 from numpy.typing import NDArray
 from models import Position
@@ -21,10 +20,10 @@ def display_maze(maze: NDArray[np.int_], robot_pos: Position, goal_pos: Position
 			else:
 				color = (191, 64, 191) # Fallback on purple color
 
-			if x == robot_pos.x and y == robot_pos.y:
-				color = (0, 0, 255)
 			if x == goal_pos.x and y == goal_pos.y:
-				color = (0, 255, 0)
+				color = (0, 255, 0) # Goal should be green
+			if x == robot_pos.x and y == robot_pos.y:
+				color = (0, 0, 255) # Robot should be red
 			cv2.rectangle(maze_image, (x*SQUARE_LENGTH, y*SQUARE_LENGTH), ((x+1)*SQUARE_LENGTH, (y+1)*SQUARE_LENGTH), color, -1)
 	return maze_image
 
@@ -36,22 +35,17 @@ example_maze = np.array([
 	[0, 0, 0, 0, 0]
 ])
 
-maze_image = display_maze(example_maze, Position(0, 0), Position(2, 2))
-move = get_bug_move(example_maze, Position(0,0), Position(2,2))
-print(move)
-
-cv2.imshow("Maze", maze_image)
-cv2.waitKey()
-
 robot_pos = Position(0, 0)
 goal_pos = Position(2, 2)
+history: list[Position] = []
 while True:
 	maze_image = display_maze(example_maze, robot_pos, goal_pos)
 	cv2.imshow("Maze", maze_image)
 	key = cv2.waitKey(100)
 
 	if key == 32:
-		move = get_bug_move(example_maze, robot_pos, goal_pos)
+		history.append(Position(robot_pos.x, robot_pos.y))
+		move = get_bug_move(example_maze, history, robot_pos, goal_pos)
 		if move == "UP":
 			robot_pos.y -= 1
 		elif move == "LEFT":
@@ -60,9 +54,9 @@ while True:
 			robot_pos.y += 1
 		elif move == "RIGHT":
 			robot_pos.x += 1
+		elif move == "STAY":
+			pass
 		else:
 			raise Exception("Invalid string returned from get_bug_move")
-		maze_image = display_maze(example_maze, robot_pos, goal_pos)
-		cv2.imshow("Maze", maze_image)
 	elif key == 27:
 		break
