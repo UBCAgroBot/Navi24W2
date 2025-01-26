@@ -1,15 +1,19 @@
 import numpy as np
 from numpy.typing import NDArray
-from models import Position
+from models import Position, World
 from bug_algorithm import get_bug_move
 import cv2
 
 SQUARE_LENGTH = 50
 
-def display_maze(maze: NDArray[np.int_], robot_pos: Position, goal_pos: Position):
+def display_maze(world: World):
 	"""
 	Returns a frame OpenCV can display
 	"""
+	maze = world.maze
+	goal_pos = world.goal_pos
+	robot_pos = world.robot_pos
+
 	maze_image = np.zeros((maze.shape[0]*SQUARE_LENGTH, maze.shape[1]*SQUARE_LENGTH, 3), dtype=np.uint8)
 	for y in range(maze.shape[0]):
 		for x in range(maze.shape[1]):
@@ -27,48 +31,69 @@ def display_maze(maze: NDArray[np.int_], robot_pos: Position, goal_pos: Position
 			cv2.rectangle(maze_image, (x*SQUARE_LENGTH, y*SQUARE_LENGTH), ((x+1)*SQUARE_LENGTH, (y+1)*SQUARE_LENGTH), color, -1)
 	return maze_image
 
-example_maze = np.array([
-	[0, 0, 0, 0, 0],
-	[1, 1, 1, 1, 0],
-	[0, 0, 0, 1, 0],
-	[0, 1, 1, 1, 0],
-	[0, 0, 0, 0, 0]
-])
-# robot_pos = Position(0, 0)
-# goal_pos = Position(2, 2)
+world1 = World(
+	np.array([
+		[0, 0, 0, 0, 0],
+		[1, 1, 1, 1, 0],
+		[0, 0, 0, 1, 0],
+		[0, 1, 1, 1, 0],
+		[0, 0, 0, 0, 0]
+	]),
+	Position(0, 0),
+	Position(2, 2)
+)
 
-example_maze2 = np.array([
-	[0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
-	[0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
-	[0, 0, 1, 1, 0, 1, 0, 0, 1, 1],
-	[1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
-	[0, 1, 1, 0, 0, 1, 0, 0, 0, 0],
-	[0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
-	[1, 1, 1, 0, 0, 0, 0, 1, 0, 0],
-	[1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
-	[1, 1, 0, 0, 0, 1, 0, 1, 0, 1],
-	[0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
-])
-robot_pos = Position(0, 0)
-goal_pos = Position(9, 9)
+world2 = World(
+	np.array([
+		[0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+		[0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+		[0, 0, 1, 1, 0, 1, 0, 0, 1, 1],
+		[1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
+		[0, 1, 1, 0, 0, 1, 0, 0, 0, 0],
+		[0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
+		[1, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+		[1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+		[1, 1, 0, 0, 0, 1, 0, 1, 0, 1],
+		[0, 1, 0, 0, 0, 0, 1, 0, 0, 0],
+	]),
+	Position(0, 0),
+	Position(9, 9),
+)
 
-history: list[Position] = []
+world3 = World(
+	np.array([
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 1, 0, 0, 0, 1, 1, 0, 0],
+		[0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+		[0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+		[0, 0, 1, 0, 0, 0, 0, 1, 0, 0],
+		[0, 1, 0, 0, 0, 0, 0, 1, 0, 0],
+		[0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+		[0, 0, 0, 0, 0, 0, 0, 0, 0, 0],
+	]),
+	Position(0, 0),
+	Position(9, 9),
+)
+
 while True:
-	maze_image = display_maze(example_maze2, robot_pos, goal_pos)
+	current_world = world3.copy()
+	maze_image = display_maze(current_world)
 	cv2.imshow("Maze", maze_image)
 	key = cv2.waitKey(100)
 
 	if key == 32:
-		history.append(Position(robot_pos.x, robot_pos.y))
-		move = get_bug_move(example_maze2, history, robot_pos, goal_pos)
+		current_world.history.append(current_world.robot_pos.copy())
+		move = get_bug_move(current_world)
 		if move == "UP":
-			robot_pos.y -= 1
+			current_world.robot_pos.y -= 1
 		elif move == "LEFT":
-			robot_pos.x -= 1
+			current_world.robot_pos.x -= 1
 		elif move == "DOWN":
-			robot_pos.y += 1
+			current_world.robot_pos.y += 1
 		elif move == "RIGHT":
-			robot_pos.x += 1
+			current_world.robot_pos.x += 1
 		elif move == "STAY":
 			pass
 		else:

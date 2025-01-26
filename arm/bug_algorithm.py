@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.typing import NDArray
 
-from models import Position
+from models import Position, World
 
 def _can_move_up(
 	maze: NDArray[np.int_],
@@ -51,19 +51,20 @@ def _can_move_down(
 def _can_move_right(
 	maze: NDArray[np.int_],
 	history: list[Position],
-	robot_pos: Position) -> bool:
+	robot_pos: Position
+	) -> bool:
 	if robot_pos.x + 1 >= maze.shape[1]:
 		return False
 
 	if maze[robot_pos.y, robot_pos.x + 1] == 1:
 		return False
 
-	if Position(robot_pos.x, robot_pos.y + 1) in history:
+	if Position(robot_pos.x + 1, robot_pos.y) in history:
 		return False
 
 	return True
 
-def get_bug_move(maze: NDArray[np.int_], history: list[Position], robot_pos: Position, goal_pos: Position) -> str:
+def get_bug_move(world: World) -> str:
 	"""
 	Parameters:
 		maze: A 2d array of integers representing the obstacles in the maze.
@@ -81,6 +82,10 @@ def get_bug_move(maze: NDArray[np.int_], history: list[Position], robot_pos: Pos
 	Returns:
 		One of: "UP", "LEFT", "DOWN", "RIGHT", "STAY"
 	"""
+	maze = world.maze
+	robot_pos = world.robot_pos
+	goal_pos = world.goal_pos
+	history = world.history
 
 	# Making sure the parameters are the correct types
 	if not isinstance(maze, np.ndarray):
@@ -129,6 +134,8 @@ def get_bug_move(maze: NDArray[np.int_], history: list[Position], robot_pos: Pos
 			desired_direction = "RIGHT"
 		elif _can_move_down(maze, history, robot_pos):
 			desired_direction = "DOWN"
+		else:
+			desired_direction = "STAY"
 
 	if desired_direction == "LEFT" and not _can_move_left(maze, history, robot_pos):
 		if _can_move_up(maze, history, robot_pos):
@@ -137,6 +144,8 @@ def get_bug_move(maze: NDArray[np.int_], history: list[Position], robot_pos: Pos
 			desired_direction = "DOWN"
 		elif _can_move_right(maze, history, robot_pos):
 			desired_direction = "RIGHT"
+		else:
+			desired_direction = "STAY"
 
 	if desired_direction == "DOWN" and not _can_move_down(maze, history, robot_pos):
 		if _can_move_left(maze, history, robot_pos):
@@ -145,6 +154,8 @@ def get_bug_move(maze: NDArray[np.int_], history: list[Position], robot_pos: Pos
 			desired_direction = "RIGHT"
 		elif _can_move_up(maze, history, robot_pos):
 			desired_direction = "UP"
+		else:
+			desired_direction = "STAY"
 
 	if desired_direction == "RIGHT" and not _can_move_right(maze, history, robot_pos):
 		if _can_move_up(maze, history, robot_pos):
@@ -153,67 +164,140 @@ def get_bug_move(maze: NDArray[np.int_], history: list[Position], robot_pos: Pos
 			desired_direction = "DOWN"
 		elif _can_move_left(maze, history, robot_pos):
 			desired_direction = "LEFT"
+		else:
+			desired_direction = "STAY"
 
 	return desired_direction
 
 def test_get_bug_move():
-	empty_3x3_maze = np.array([
-		[0, 0, 0],
-		[0, 0, 0],
-		[0, 0, 0],
-	])
-	m_maze1 = get_bug_move(empty_3x3_maze, [] , Position(0, 1), Position(2, 1))
+	empty_3x3_world = World(
+		np.array([
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+		]),
+		Position(0, 1),
+		Position(2, 1)
+	)
+		
+	m_maze1 = get_bug_move(empty_3x3_world)
 	if m_maze1 != "RIGHT":
 		print(m_maze1)
 		raise Exception("get_bug_move should have returned RIGHT")
 
-	m_maze2 = get_bug_move(empty_3x3_maze, [] , Position(2, 1), Position(0, 1))
+	empty_3x3_world_2 = World(
+		np.array([
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+		]),
+		Position(2, 1),
+		Position(0, 1)
+	)
+
+	m_maze2 = get_bug_move(empty_3x3_world_2)
 	if m_maze2 != "LEFT":
 		raise Exception("get_bug_move should have returned LEFT")
 
-	m_maze3 = get_bug_move(empty_3x3_maze, [] , Position(1, 2), Position(1, 0))
+	empty_3x3_world_3 = World(
+		np.array([
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+		]),
+		Position(1, 2),
+		Position(1, 0)
+	)
+	m_maze3 = get_bug_move(empty_3x3_world_3)
 	if m_maze3 != "UP":
 		print(m_maze3)
 		raise Exception("get_bug_move should have returned UP")
 
-	m_maze4 = get_bug_move(empty_3x3_maze, [] , Position(1, 0), Position(1, 2))
+	empty_3x3_world_4 = World(
+		np.array([
+			[0, 0, 0],
+			[0, 0, 0],
+			[0, 0, 0],
+		]),
+		Position(1, 2),
+		Position(1, 0)
+	)
+	m_maze4 = get_bug_move(empty_3x3_world_4)
 	if m_maze4 != "DOWN":
 		raise Exception("get_bug_move should have returned DOWN")
 
-	obstacle_maze = np.array([
-		[0, 0, 0],
-		[1, 1, 0],
-		[0, 0, 0],
-	])
-	m_maze5 = get_bug_move(obstacle_maze, [] , Position(0, 0), Position(0, 2))
+	obstacle_world = World(
+		np.array([
+			[0, 0, 0],
+			[1, 1, 0],
+			[0, 0, 0],
+		]),
+		Position(0, 0),
+		Position(0, 2),
+	)
+	m_maze5 = get_bug_move(obstacle_world)
 	if m_maze5 != "RIGHT":
 		print(m_maze5)
 		raise Exception("get_bug_move should have returned RIGHT")
 
-	m_maze6 = get_bug_move(obstacle_maze, [] , Position(2, 1), Position(0, 0))
+	obstacle_world_2 = World(
+		np.array([
+			[0, 0, 0],
+			[1, 1, 0],
+			[0, 0, 0],
+         ]),
+		Position(2, 1),
+		Position(0, 0),
+	)
+	m_maze6 = get_bug_move(obstacle_world_2)
 	if m_maze6 != "UP":
 		print(m_maze6)
 		raise Exception("get_bug_move should have returnd UP")
 
-	circle_maze = np.array([
-	    [0, 0, 0],
-	    [0, 1, 0],
-	    [0, 0, 0],
-	])
-	m_maze7 = get_bug_move(circle_maze, [] , Position(2, 2), Position(0, 1))
+	circle_word_3 = World(
+		np.array([
+		    [0, 0, 0],
+		    [0, 1, 0],
+		    [0, 0, 0],
+		]),
+		Position(2, 2),
+		Position(0, 1),
+	)
+	m_maze7 = get_bug_move(circle_word_3)
 	if m_maze7 != "LEFT":
 		raise Exception("get_bug_move should have returned LEFT")
 
-	alcove = np.array([
-	    [0, 0, 0, 0],
-	    [1, 1, 1, 0],
-	    [0, 0, 1, 0],
-	    [0, 1, 1, 0],
-	    [0, 0, 0, 0],
-	])
-	m_maze8 = get_bug_move(alcove, [] , Position(1, 2), Position(3, 0))
+	alcove = World(
+		np.array([
+		    [0, 0, 0, 0],
+		    [1, 1, 1, 0],
+		    [0, 0, 1, 0],
+		    [0, 1, 1, 0],
+		    [0, 0, 0, 0],
+		]),
+		Position(1, 2),
+		Position(3, 0),
+	)
+	m_maze8 = get_bug_move(alcove)
 	if m_maze8 != "LEFT":
 		raise Exception("get_bug_move should have returned LEFT")
+
+	# Test that bug will not re-traverse an already traveled path
+	bottle_neck = World(
+		np.array([
+			[0,1,0,0,0],
+			[0,1,1,0,1],
+			[0,0,0,0,1],
+			[1,1,1,0,0],
+			[0,0,0,0,0],
+		]),
+		Position(2, 0),
+		Position(4, 0),
+	)
+	m_maze9 = get_bug_move(bottle_neck)
+	if m_maze9 != "STAY":
+		print(m_maze9)
+		raise Exception("get_bug_move should have returned STAY")
 
 if __name__ == "__main__":
 	test_get_bug_move()
