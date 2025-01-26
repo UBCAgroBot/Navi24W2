@@ -34,18 +34,33 @@ example_maze = np.array([
 	[0, 1, 1, 1, 0],
 	[0, 0, 0, 0, 0]
 ])
+# robot_pos = Position(0, 0)
+# goal_pos = Position(2, 2)
 
+example_maze2 = np.array([
+	[0, 0, 0, 1, 1, 0, 0, 0, 0, 0],
+	[0, 0, 1, 0, 0, 0, 0, 1, 0, 1],
+	[0, 0, 1, 1, 0, 1, 0, 0, 1, 1],
+	[1, 0, 0, 0, 0, 1, 1, 1, 0, 0],
+	[0, 1, 1, 0, 0, 1, 0, 0, 0, 0],
+	[0, 0, 0, 0, 1, 1, 1, 1, 0, 0],
+	[1, 1, 1, 0, 0, 0, 0, 1, 0, 0],
+	[1, 0, 0, 0, 0, 0, 0, 1, 0, 0],
+	[1, 1, 0, 0, 0, 1, 0, 1, 0, 1],
+	[0, 1, 0, 0, 0, 0, 1, 0, 0, 0]
+])
 robot_pos = Position(0, 0)
-goal_pos = Position(2, 2)
+goal_pos = Position(9, 9)
+
 history: list[Position] = []
 while True:
-	maze_image = display_maze(example_maze, robot_pos, goal_pos)
+	maze_image = display_maze(example_maze2, robot_pos, goal_pos)
 	cv2.imshow("Maze", maze_image)
 	key = cv2.waitKey(100)
 
 	if key == 32:
 		history.append(Position(robot_pos.x, robot_pos.y))
-		move = get_bug_move(example_maze, history, robot_pos, goal_pos)
+		move = get_bug_move(example_maze2, history, robot_pos, goal_pos)
 		if move == "UP":
 			robot_pos.y -= 1
 		elif move == "LEFT":
