@@ -3,7 +3,7 @@ import numpy as np
 import random
 
 class AckermanRRT:
-    def __init__(self, start, goal, obstacles, bounds, step_size=2, max_iter=1000, wheelbase=2.5, turning_radius=5):
+    def __init__(self, start, goal, obstacles, bounds, step_size=2, max_iter=1000, wheelbase=2.5, turning_radius=0.5):
         self.start = np.array(start)  # (x, y, theta)
         self.goal = np.array(goal)   # (x, y, theta)
         self.obstacles = obstacles   # List of rectangles [(x_min, y_min, x_max, y_max), ...]
