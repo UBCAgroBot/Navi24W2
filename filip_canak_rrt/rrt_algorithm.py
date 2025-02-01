@@ -5,6 +5,8 @@ import time
 import csv
 from math import sin,cos
 import robot
+from time import time
+import detector 
 
 WIDTH = 500
 HEIGHT = 500
@@ -39,9 +41,6 @@ def parse_symbols(symbol_table:dict) -> np.array:
 
 
 
-posx = 0
-posy = 0
-
 seconds = 10
 
 FPS = 24
@@ -58,35 +57,36 @@ if __name__ == "__main__":
 
     mycan = parse_symbols(symbols)
 
-    r = robot.Robot(mycan)
-    r.width = 100
-    r.height = 100
+    r = robot.Robot(mycan,WIDTH/2, HEIGHT/2)
+    #r.width = 100
+    #r.height = 100
 
     r.pos_x = WIDTH/2
     r.pos_y = HEIGHT/2
 
-    for _ in range(FPS*seconds):
-        #frame = np.zeros((height,width,3),dtype =np.uint8)
-        #frame = np.random.randint(0, 256, 
-          #                     (height, width, 3), 
-         #                      dtype=np.uint8)
-        r.draw()
-        mycan = parse_symbols(symbols)
+    
+    r.velocity.set_x(2)
 
+    r.velocity.set_y(2)
+    
+    start_time = time()
+
+    d = detector.Detector(40,r)
+   
+    for _ in range(FPS*seconds):
+        
+        r.update()
+        d.update()
+        mycan = parse_symbols(symbols)
         #drawing the robot
         cv2.line(mycan,r.points["topleft"].astype(np.int64),r.points["topright"].astype(np.int64),(255,0,0),5)
         cv2.line(mycan,r.points["topleft"].astype(np.int64),r.points["botleft"].astype(np.int64),(255,0,0),5)
         cv2.line(mycan,r.points["botleft"].astype(np.int64),r.points["botright"].astype(np.int64),(255,0,0),5)
         cv2.line(mycan,r.points["botright"].astype(np.int64),r.points["topright"].astype(np.int64),(255,0,255),5)
         
-        r.change_x = 2
-        r.change_y = 2
+        cv2.circle(mycan,d.points.astype(np.int64),d.radius,(0,0,255),3)
 
-
-        r.pos_x += r.change_x*cos(r.angle)
-        r.pos_y += r.change_y*sin(r.angle)
-
-
+        
         if r.angle >= 2*np.pi:
             r.angle = 0
             mod *= -1
@@ -96,10 +96,10 @@ if __name__ == "__main__":
         r.angle += np.pi/75*mod
         
 
-        # cv2.circle(frame,(valx, int(height/2)),100,(0,0,0),-1)
-        # valx+= 1
         video.write(mycan)
-    print("video finished")
+
+
+    print(f"video rendered in {round(time() - start_time,2)} seconds")
 
 
     
