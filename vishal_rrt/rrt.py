@@ -43,7 +43,7 @@ class RRTAlg():
         self.numWaypoints = 0  
         self.Waypoints = []
 
-     # Add child to tree
+    # Add child to tree
     def addChild(self, X, Y):
         if X == self.goal.X and Y == self.goal.Y:
             self.nearestNode.children.append(self.goal)
