@@ -1,0 +1,25 @@
+{
+    "name": "ROS2 + Gazebo",
+    "remoteUser": "vscode",
+    "image": "agrobotappliedai/ros-containers:gazebo",
+    "customizations":{
+        "settings": {
+            "terminal.integrated.shell.linux": "bash"
+        }
+    },
+    "workspaceFolder": "/home/vscode/workspace",
+    "workspaceMount": "source=.,target=/home/vscode/workspace,type=bind,consistency=cached",
+    "mounts": [],
+    "runArgs": [
+        "--net=host",
+        "-it",
+        "--device=/dev/ttyACM0",
+        "--privileged",
+        "--ipc=host",
+        // For X
+        "--volume=/tmp/.X11-unix:/tmp/.X11-unix",
+        "--volume=/home/finn/.Xauthority:/home/vscode/.Xauthority",
+        // "-e DISPLAY=$DISPLAY"
+    ],
+    "postCreateCommand": "bash -c 'echo source /opt/ros/humble/setup.bash >> ~/.bashrc && source /opt/ros/humble/setup.bash'"
+}

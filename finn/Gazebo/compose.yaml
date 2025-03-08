@@ -1,0 +1,17 @@
+services:
+  gazebo:
+    build: .
+    network_mode: host
+    privileged: true
+    ipc: host
+    stdin_open: true
+    tty: true
+    volumes:
+      - /tmp/.X11-unix:/tmp/.X11-unix
+      - ${XAUTHORITY}:/home/vscode/.Xauthority
+      - ./Worlds:/home/vscode/Worlds
+      - ./workspace:/home/vscode/workspace
+      - ./bashrc:/home/vscode/.bashrc
+    environment:
+      - DISPLAY=${DISPLAY}
+      - TERM=xterm-color

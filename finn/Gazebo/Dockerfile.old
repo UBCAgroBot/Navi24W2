@@ -1,0 +1,27 @@
+FROM ubuntu:jammy
+RUN apt-get update
+RUN apt-get install -y lsb-release gnupg curl
+RUN curl https://packages.osrfoundation.org/gazebo.gpg --output /usr/share/keyrings/pkgs-osrf-archive-keyring.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/pkgs-osrf-archive-keyring.gpg] http://packages.osrfoundation.org/gazebo/ubuntu-stable $(lsb_release -cs) main" | tee /etc/apt/sources.list.d/gazebo-stable.list > /dev/null
+
+# We also need some ROS crap for the gz bridge
+# which is here cause the other container is gazebo-independant
+RUN apt install -y software-properties-common
+RUN add-apt-repository universe
+RUN curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
+RUN echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" |  tee /etc/apt/sources.list.d/ros2.list > /dev/null
+
+RUN apt-get update
+RUN apt-get install -y \
+  python3-flake8-docstrings \
+  python3-pip \
+  python3-pytest-cov 
+
+ENV DEBIAN_FRONTEND=noninteractive
+RUN apt-get install -y ignition-fortress 
+RUN apt-get install -y ros-humble-ros-gz
+
+RUN apt-get install python3 python3-tk
+COPY ./gazebo_launcher.py /root/gazebo_launcher.py
+
+CMD ["python3", "/root/gazebo_launcher.py"]
