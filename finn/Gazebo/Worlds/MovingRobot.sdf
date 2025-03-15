@@ -89,9 +89,10 @@
                     <topic>imu</topic>
                 </sensor>
 
+                <!-- THIS WORKS -->
                 <sensor name='sensor_contact' type='contact'>
                     <contact>
-                        <collision>chassis</collision>
+                        <collision>collision</collision>
                         <topic>contact</topic>
                     </contact>
                     <topic>contact</topic>
@@ -119,6 +120,7 @@
                         </image>
                         <depth_camera>
                             <output>depths</output>
+                            <always_on>1</always_on>
                             <clip>
                                 <near>0.3</near>
                                 <far>20</far>

@@ -67,3 +67,53 @@ Now you should be able to drive aroung the scene using the arrow keys!
 ![key listener](imgs/tut5.png)
 
 In the image viewer section you can switch to viewing the camera feed instead.
+
+## Connecting to ROS
+This section assumes you're in the container.
+
+Setting up custom connections between ROS and Gazebo is easy.
+I'm sure you can figure it out.
+
+### MovingRobot scene
+Run
+```bash
+./start_bridge.sh
+```
+to connect ROS to Gazebo.
+The configuration for the gz bridge is in `movingrobot.yaml`.
+
+At some point open the moving robot scene in Gazebo.
+
+The moving robot scene exposes these topics:
+ - **/contact**: _GZ to ROS._ When the robot touches something, collision
+ info is published here. It includes which objects are colliding.
+ - **/camera/image**: _GZ to ROS._ Publishes the images the RGB camera on the robot sees.
+ - **/camera/depth_image**: _GZ to ROS._ Publishes the images the depth camera on the robot sees.
+ - **/imu**: _GZ to ROS._ Publishes IMU data. This includes the angular velocity and linear acceleration.
+ - **/cmd_vel**: _ROS to GZ._ This is how the robot is controlled. You can set the linear velocity and angular velocity here.
+
+### Using rqt
+ROS has a nice GUI tool to help see nodes and topics.
+
+You can run it from inside the container with
+```bash
+rqt
+```
+Note that Gazebo topics will only publish data when the simulation is running
+
+#### To view images:
+In the menu bar, click `Plugins > Visualization > Image View`. On the image view, use the dropdown
+at the top left to select an image topic (such as `/camera/image`).
+
+#### To view topics:
+In the menu bar, click `Plugins > Topics > Topic Monitor`. Check the checkmark next to the topics 
+you want to monitor. You can expand them to get more info. To see their values, scroll all the way to the right
+until you see the `Value` column. Note that it takes a second before values start appearing.
+
+#### To publish to topics:
+In the menu bar, click `Plugins > Topics > Message Publisher`. At the top, select the topic you
+want to publish to, how often you want to send it (frequency), then click the `+` button.
+
+You can then modify the values by double clicking on the `expression` cells.
+Once you want to send it, check the checkbox and it'll be sent at the frequency you specified.
+
