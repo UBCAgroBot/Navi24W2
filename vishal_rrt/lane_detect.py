@@ -37,7 +37,7 @@ def process_frame(frame):
 
 def main():
     #loading video
-    cap = cv2.VideoCapture('lanes_clip.mp4')
+    cap = cv2.VideoCapture('vishal_rrt/lanes_clip.mp4')
     if not cap.isOpened():
         print("Error: Could not open video.")
         exit()
