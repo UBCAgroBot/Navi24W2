@@ -1,3 +1,4 @@
+from typing import Optional
 import bisect
 import copy
 import random
@@ -8,9 +9,10 @@ from util.maze_helpers import check_in_bounds, find_unique_item
 
 DIRS: list[tuple[int, int]] = [(0, 1), (1, 0), (0, -1), (-1, 0)]
 
+random_seed = 42
 
 def maze_generator(
-    dims: tuple[int, int], min_dist: int = 3, depth: int = 3, smoothness: int = 1
+    dims: tuple[int, int], min_dist: int = 3, depth: int = 3, smoothness: int = 1,
 ) -> list[list[int]]:
     """Generates a maze based on the specified dimensions and parameters.
 
@@ -86,6 +88,7 @@ def _maze_generator_attempt(
     Returns:
         list[list[int]]: 2D list representing the generated maze.
     """
+    random.seed(random_seed)
     x, y = dims
     maze: list[list[int]] = [[GridTile.WALL.value] * y for _ in range(x)]
 
