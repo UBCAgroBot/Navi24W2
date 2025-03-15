@@ -14,13 +14,12 @@ from numpy import ndarray
 from numpy.typing import NDArray
 from pygame import gfxdraw
 from pygame.surface import Surface
+from continuous_env import policy
 
 from continuous_env.robot_dynamics import Robot
 from util.astar_search import astar_pathfinding
 from util.maze_generator import maze_generator
 from util.maze_helpers import find_unique_item
-
-from continuous_env.policy import random_move
 
 """
 Car racing environment adapted with maze generation and A*, originally from
@@ -98,7 +97,13 @@ class RobotObstacles(gym.Env[NDArray[np.uint8], NDArray[np.float32]]):  # type: 
         self,
         render_mode: Optional[str] = None,
         verbose: bool = False,
+        seed: Optional[int] = None,
     ) -> None:
+
+        if seed is None:
+            self.seed = np.random.default_rng(seed)
+        else:
+            self.seed = np.random.default_rng(seed)
         self.render_mode: Optional[str] = render_mode
         self.verbose: bool = verbose
         self.reward: float = 0.0
@@ -512,6 +517,9 @@ class RobotObstacles(gym.Env[NDArray[np.uint8], NDArray[np.float32]]):  # type: 
             self.isopen = False
             pygame.quit()
 
+    def get_internal_state(self) -> list[list[int]] | None:
+        return self.maze
+
 
 def main() -> None:
     a = np.array([0.0, 0.0, 0.0, 0.0])
@@ -561,8 +569,10 @@ def main() -> None:
         steps = 0
         restart = False
         while True:
-            a = random_move(False, False, False)
-            s, r, terminated, truncated, info = env.step(a)
+            s = env.get_internal_state()
+            a = policy.random_move(s)
+            new_pixel_values, r, terminated, truncated, info = env.step(a)
+            s_prime = env.get_internal_state()
             total_reward += r
             if steps % 200 == 0 or terminated or truncated:
                 print("\naction " + str([f"{x:+0.2f}" for x in a]))
