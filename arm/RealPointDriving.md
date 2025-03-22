@@ -8,6 +8,9 @@ Here we can see that if we are able to go directly to our path we will.
 
 ![points going straight down](StraightLine.png)
 
+With adjusted parameters, rather than viewing the robot as a single point, we can create plots where the points represent the position of the wheels on the robot
+
+![A simple path with wheel view on](improved_turning.png)
 The code for this is in:
 `filip_canak_rrt/realistic_drive.py`
 
