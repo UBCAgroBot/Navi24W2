@@ -4,6 +4,7 @@ import math
 from typing import Any, Dict, Optional, Tuple, Union
 
 import Box2D
+from continuous_env.log import save_sars
 import gymnasium as gym
 import numpy as np
 import pygame
@@ -573,6 +574,7 @@ def main() -> None:
             a = policy.random_move(s)
             new_pixel_values, r, terminated, truncated, info = env.step(a)
             s_prime = env.get_internal_state()
+            save_sars(s, a, r, s_prime, "v_one.log")
             total_reward += r
             if steps % 200 == 0 or terminated or truncated:
                 print("\naction " + str([f"{x:+0.2f}" for x in a]))

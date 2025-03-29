@@ -5,12 +5,13 @@ from enum import Enum
 from dataclasses import dataclass
 
 class Direction(Enum):
-	LEFT = [-1, 0, 0, 0]
-	RIGHT = [1, 0, 0, 0]
+	LEFT = [-0.5, 0, 0, 0]
+	RIGHT = [0.5, 0, 0, 0]
+	NO_ANGLE = [0, 0, 0, 0]
 
 class Speed(Enum):
-	FORWARD = [0, 1, 0, 0]
-	BACKWARDS = [0, 0, 0, 1]
+	FORWARD = [0, 0.01, 0, 0]
+	BACKWARDS = [0, 0, 0, 0.01]
 
 @dataclass
 class Action:
@@ -127,12 +128,8 @@ def random_move(internal_state: list[list[int]]|None) -> npt.NDArray[np.float32]
 	# If we have not moved for 60 frames then we want to
 	# generate a new action to take until we hit another wall
 	if num_frames_not_moved == 120:
-		print("HIT WALL")
-		
 		rand_direction = random.choice(list(Direction))
-		print("New rand dir: ", rand_direction)
 		rand_speed = random.choice(list(Speed))
-		print("New rand speed: ", rand_speed)
 		num_frames_not_moved = 0
 
 	rand_action = Action(direction=rand_direction, speed=rand_speed)
