@@ -11,3 +11,11 @@ Run the simulation with:
 ```sh
 poetry run python -m continuous_env.robot_obstacles 
 ```
+
+# Info
+
+Log format is state, action, reward, new_state. Ex:
+
+(3, 4); (LEFT, UP); -40.4; (2, 3); (2, 3); (LEFT, DOWN); +20.2; (1, 4);
+
+
