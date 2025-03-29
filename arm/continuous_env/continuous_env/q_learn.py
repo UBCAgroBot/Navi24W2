@@ -18,8 +18,31 @@ Action (a):
 State prime (s_prime):
 	This is the state again but after took the action
 """
+from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
+
+
+@dataclass(frozen=True)
+class State:
+	x: int
+	y: int
+
+	@classmethod
+	def from_string(cls, s: str) -> "State":
+		"""
+		Create a State from a string in the format '(x, y);'
+		"""
+		s = s.strip().rstrip(';').strip('()')
+		try:
+			x_str, y_str = map(str.strip, s.split(','))
+			x, y = int(x_str), int(y_str)
+		except Exception as e:
+			raise ValueError(f"Cannot create state with string: {s}") from e
+		return cls(x, y)
+
+	def __str__(self) -> str:
+		return f"State({self.x}, {self.y})"
 
 class Direction(Enum):
 	LEFT = "LEFT"
@@ -29,8 +52,137 @@ class Speed(Enum):
 	FORWARD = "FORWARD"
 	BACKWARDS = "BACKWARD"
 
-@dataclass
+
+@dataclass(frozen=True)
 class Action:
 	direction: Direction
 	speed: Speed
 
+	@classmethod
+	def from_string(cls, s: str) -> "Action":
+		"""
+		Create an Action from a string in the format '(DIRECTION, SPEED);'
+		"""
+		s = s.strip().rstrip(';').strip('()')
+		direction_str, speed_str = [part.strip() for part in s.split(',')]
+
+		try:
+			direction = Direction[direction_str]
+			speed = Speed[speed_str]
+		except KeyError as e:
+			raise ValueError(f"Invalid direction or speed in string: {s}") from e
+
+		return cls(direction, speed)
+
+
+@dataclass(frozen=True)
+class SARS:
+	s: State
+	a: Action
+	r: float
+	s_prime: State
+
+	def __str__(self) -> str:
+		return f"SARS({self.s}, {self.a}, {self.r}, {self.s_prime})"
+
+
+def inc_k(state: State, action: Action):
+	global K
+	K[(state, action)] += 1
+
+
+def set_q(state: State, action: Action, new_val: float):
+	global Q
+	Q[(state, action)] = new_val
+
+
+def get_k(state: State, action: Action) -> int:
+	global K
+	return K[(state, action)]
+
+
+def get_q(state: State, action: Action) -> float:
+	global Q
+	return Q[(state, action)]
+
+
+def q_vals(state: State) -> list[float]:
+	"""
+	Returns a list of all the q values in a given state,
+	defaulting to 0 if not initialized yet
+	"""
+	all_actions = [
+		Action(Direction.LEFT, Speed.FORWARD),
+		Action(Direction.LEFT, Speed.BACKWARDS),
+		Action(Direction.RIGHT, Speed.FORWARD),
+		Action(Direction.RIGHT, Speed.BACKWARDS),
+	]
+	return [Q.get((state, a), 0.0) for a in all_actions]
+
+def do_learning(experiences: list[SARS], discount_factor: float):
+	for ex in experiences:
+		s = ex.s
+		a = ex.a
+		r = ex.r
+		s_prime = ex.s_prime
+		
+		inc_k(s, a)
+
+		# Q[s, a] = Q[s, a] + a_k(r + γ max_a'(Q[s', a']) - Q[s, a])
+		a_k = 1/get_k(s, a)
+		dc = discount_factor
+		new_q_val = get_q(s, a) + a_k * (r + dc * max(q_vals(s_prime)) - get_q(s, a))
+		print("New q val: ", new_q_val)
+		set_q(s, a, new_q_val)
+
+
+
+def get_file_contents(path: str) -> str:
+	"""
+	Returns the first line of the file at path	
+	"""
+	with open(path, "r") as file:
+		return file.readline()
+
+
+def parse_experiences(file_contents: str) -> list[SARS]:
+	items = file_contents.split("; ")
+	experiences = []
+
+	# Reads the first 4 entries from items
+	# removing them from the array after 
+	# saving them to experiences
+	while len(items) >= 4:
+		experiences.append(SARS(
+			s = State.from_string(items[0]),
+			a = Action.from_string(items[1]),
+			r = float(items[2]),
+			s_prime = State.from_string(items[3]),
+		))
+		items = items[4:]
+	
+	return experiences
+
+def print_optimal_values():
+	"""
+	Iterates through all (x, y) states in a 40x40 grid,
+	and prints the maximum Q value for each state.
+	"""
+	for x in range(5):
+		for y in range(5):
+			state = State(x, y)
+			values = q_vals(state)
+			max_q = max(values)
+			print(f"{max_q:.2f} \t", end="")
+		print()
+
+
+path_to_experiences = './logs/v_one.log'
+discount_factor = 0.9
+Q = defaultdict(float)
+K = defaultdict(int)
+experiences_file_contents = get_file_contents(path_to_experiences)
+
+experiences = parse_experiences(experiences_file_contents)
+do_learning(experiences, discount_factor)
+print_optimal_values()
