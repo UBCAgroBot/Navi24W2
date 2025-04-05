@@ -82,6 +82,8 @@ def straight_line(internal_state: list[list[int]]|None) -> npt.NDArray[np.float3
 		else:
 			straight_line_acceleration = Speed.FORWARD
 
+		
+		
 		straight_line_direction = random.choice([Direction.LEFT, Direction.RIGHT])
 
 		
@@ -91,6 +93,8 @@ def straight_line(internal_state: list[list[int]]|None) -> npt.NDArray[np.float3
 	action = Action(direction=straight_line_direction, speed=straight_line_acceleration)
 	return action.get_action_as_open_ai_array()
 	
+
+
 
 
 def random_move(internal_state: list[list[int]]|None) -> npt.NDArray[np.float32]:

@@ -72,10 +72,13 @@ class ActionState:
 
 action_state = ActionState()
 
-def random_move(s, s_prime=None, reward=None) -> npt.NDArray[np.float32]:
+def random_move(s, reward, s_prime=None) -> npt.NDArray[np.float32]:
     global action_state
     
     action = np.array([0.0, 0.0, 0.0, 0.0], dtype=float)
+    print(reward)
+
+    
 
     if s is not None and action_state.prev_position is None:
         action_state.prev_position = s
@@ -96,7 +99,7 @@ def random_move(s, s_prime=None, reward=None) -> npt.NDArray[np.float32]:
 
     is_stuck = False
     if len(action_state.position_history) >= 5:
-        print("hit a wall")
+        # print("hit a wall")
         is_stuck = action_state.stuck_counter > 15
         action_state.stuck_counter += 1
     else:

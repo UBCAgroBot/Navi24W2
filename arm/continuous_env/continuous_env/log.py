@@ -29,27 +29,36 @@ def save_sars(s, a, r, s_prime, log_file_name, batch_size = 10):
 				x = i
 				y = j
 
+	x_prime = None
+	y_prime = None
+
+	for i, nested_arr in enumerate(s_prime):
+		for j, val in enumerate(nested_arr):
+			if (val == 1):
+				x_prime = i
+				y_prime = j
+
 	nextPositionX = None
 	nextPositionY = None
 	currentMove = None
 	currentSpeed = None
 
 	if a[0] == -0.5: 
-		nextPositionX = x - 1
+		# nextPositionX = x - 1
 		currentMove = "LEFT"
 
 	elif a[0] == 0.5:
-		nextPositionX = x + 1
+		# nextPositionX = x + 1
 		currentMove = "RIGHT"
 
 	if a[1] == 0.01:
-		nextPositionY = y - 1
+		# nextPositionY = y - 1
 		currentSpeed = "FORWARD"
 	elif a[3] == 0.01:
-		nextPositionY = y + 1
+		# nextPositionY = y + 1
 		currentSpeed = "BACKWARDS"
 
-	instance = sars(s= (x,y), a=(currentMove,currentSpeed), r =r, s_prime = (nextPositionX, nextPositionY))
+	instance = sars(s= (x,y), a=(currentMove,currentSpeed), r =r, s_prime = (x_prime, y_prime))
 	entries.append(instance)
 
 	if len(entries) > batch_size:
