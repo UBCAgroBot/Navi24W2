@@ -16,6 +16,6 @@ poetry run python -m continuous_env.robot_obstacles
 
 Log format is state, action, reward, new_state. Ex:
 
-(3, 4); (LEFT, UP); -40.4; (2, 3); (2, 3); (LEFT, DOWN); +20.2; (1, 4);
+(3, 4); (LEFT, FORWARD); -40.4; (2, 3); (2, 3); (LEFT, BACKWARDS); +20.2; (1, 4);
 
 
