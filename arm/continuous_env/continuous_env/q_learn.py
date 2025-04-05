@@ -50,7 +50,7 @@ class Direction(Enum):
 
 class Speed(Enum):
 	FORWARD = "FORWARD"
-	BACKWARDS = "BACKWARD"
+	BACKWARDS = "BACKWARDS"
 
 
 @dataclass(frozen=True)
@@ -70,7 +70,7 @@ class Action:
 			direction = Direction[direction_str]
 			speed = Speed[speed_str]
 		except KeyError as e:
-			raise ValueError(f"Invalid direction or speed in string: {s}") from e
+			raise ValueError(f"Invalid direction or speed in string: {s}, direction_str {direction_str}, speed_str: {speed_str}") from e
 
 		return cls(direction, speed)
 
