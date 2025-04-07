@@ -1,4 +1,6 @@
 from pydantic import BaseModel
+from continuous_env.policy import Action as PolicyAction
+from continuous_env.policy import policy_direction_to_str, policy_speed_to_str
 from typing import Any
 import os
 
@@ -10,7 +12,13 @@ class sars(BaseModel):
 
 entries: list[sars] = []
 
-def save_sars(s, a, r, s_prime, log_file_name, batch_size = 10):
+MAX_FILE_SIZE = 10 * 1024 * 1024
+LOG_DIR = "logs"
+
+def get_log_file_path(base_name: str, index: int) -> str:
+	return os.path.join(LOG_DIR, f"{base_name}_{index}.log")
+
+def save_sars(s, a: PolicyAction, r, s_prime, base_log_name, batch_size = 1000):
 	"""
 	Saves the s, a, r, s_prime value to a file in the log
 	folder under the same log_file_name
@@ -38,92 +46,24 @@ def save_sars(s, a, r, s_prime, log_file_name, batch_size = 10):
 				x_prime = i
 				y_prime = j
 
-	nextPositionX = None
-	nextPositionY = None
-	currentMove = None
-	currentSpeed = None
 
-	if a[0] == -0.5: 
-		# nextPositionX = x - 1
-		currentMove = "LEFT"
-
-	elif a[0] == 0.5:
-		# nextPositionX = x + 1
-		currentMove = "RIGHT"
-
-	if a[1] == 0.01:
-		# nextPositionY = y - 1
-		currentSpeed = "FORWARD"
-	elif a[3] == 0.01:
-		# nextPositionY = y + 1
-		currentSpeed = "BACKWARDS"
-
-	instance = sars(s= (x,y), a=(currentMove,currentSpeed), r =r, s_prime = (x_prime, y_prime))
+	instance = sars(s = (x,y), a = (policy_direction_to_str(a.direction), policy_speed_to_str(a.speed)), r = r, s_prime = (x_prime, y_prime))
 	entries.append(instance)
 
 	if len(entries) > batch_size:
-		log_file_path = os.path.join("logs", log_file_name)
+		file_index = 0
+		log_file_path = get_log_file_path(base_log_name, file_index)
+		while os.path.exists(log_file_path) and os.path.getsize(log_file_path) > MAX_FILE_SIZE:
+			file_index += 1
+			log_file_path = get_log_file_path(base_log_name, file_index)
+
 		with open(log_file_path, "a") as f:
 			for entry in entries:
 				formatted_entry = f"({entry.s[0]}, {entry.s[1]}); ({entry.a[0]}, {entry.a[1]}); {entry.r}; ({entry.s_prime[0]}, {entry.s_prime[1]});"
 				f.write(formatted_entry + " ")
+				if f.tell() > MAX_FILE_SIZE:
+					f.close()
+					file_index += 1
+					log_file_path = get_log_file_path(base_log_name, file_index)
+					f = open(log_file_path, "a")
 		entries.clear()
-
-
-
-
-# entries:list[tuple[int,int]]=  []
-
-# def save_sars(s, a, r, s_prime, log_file_name, batch_size = 10):
-# 	"""
-# 	Saves the s, a, r, s_prime value to a file in the log
-# 	folder under the same log_file_name
-# 	s,a,r,s_prime;...;s,a,r,s_prime;
-# 	ie. Commas seperate the values and a semicolon seperates
-# 	entries
-# 	"""
-# 	# global entries
-# 	# for nested_arr in s:
-# 	# 	for val in nested_arr:
-# 	# 		print(val, end = "")
-# 	# 		if val 
-
-# 	global entries
-# 	for i, nested_arr in enumerate(s):
-# 		for j, val in enumerate(nested_arr):
-# 			print(val, end = "")
-# 		print()
-
-# 	global entries
-# 	x = None
-# 	y = None
-
-# 	for i, nested_arr in enumerate(s):
-# 		for j, val in enumerate(nested_arr):
-# 			print(val, end = "")
-# 			if(val == 1):
-# 				x = i
-# 				y = j
-# 		print(f" (width of {len(nested_arr)})")	
-
-
-# 	print(f"(length of s {len(s)})")
-
-# 	if x == None or y == None:
-# 		print("Could not find robot position")
-# 	else:
-# 		print("robot position (x,y): ", x, y)
-		
-# 	# entries.append(sars(s=s, a=a, r=r, s_prime=s_prime))
-
-# 	entries.append((x,y))
-# 	# print(len(entries))
-# 	if len(entries) > batch_size:
-# 		log_file_path = os.path.join("logs", log_file_name)
-# 		with open(log_file_path, "a") as f:
-# 			# f.write(x , y)
-# 			for entry in entries:
-# 				f.write(f"({entry[0]}, {entry[1]}) ")
-			
-# 			# f.write(";".join(f"{e.s},{e.a},{e.r},{e.s_prime}" for e in entries) + ";")
-# 		entries.clear()

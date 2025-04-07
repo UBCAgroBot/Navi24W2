@@ -598,6 +598,7 @@
 from __future__ import annotations
 
 import math
+from operator import truediv
 from typing import Any, Dict, Optional, Tuple, Union
 
 import Box2D
@@ -1118,70 +1119,50 @@ class RobotObstacles(gym.Env[NDArray[np.uint8], NDArray[np.float32]]):  # type: 
     def get_internal_state(self) -> list[list[int]] | None:
         return self.maze
 
+    def get_internal_reward(self) -> float:
+        return self.reward
 
 def main() -> None:
+    repeat = True
     a = np.array([0.0, 0.0, 0.0, 0.0])
     quit: bool = False
     restart: bool = False
 
-    def register_input() -> None:
-        nonlocal quit, restart
-        for event in pygame.event.get():
-            if event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_LEFT:
-                    a[0] = -1.0
-                if event.key == pygame.K_RIGHT:
-                    a[0] = +1.0
-                if event.key == pygame.K_UP:
-                    a[1] = +1.0
-                if event.key == pygame.K_LSHIFT:
-                    a[2] = +0.8
-                if event.key == pygame.K_DOWN:
-                    a[3] = +0.3
-                if event.key == pygame.K_RETURN:
-                    restart = True
-                if event.key == pygame.K_ESCAPE:
+    env = RobotObstacles(render_mode="rgb_array")
+
+    while repeat:
+        quit = False
+        while not quit:
+            env.reset()
+            total_reward = 0.0
+            steps = 0
+            restart = False
+            while True:
+                s = env.get_internal_state()
+                a = policy.random_move(s)
+                new_pixel_values, r, terminated, truncated, info = env.step(a.get_action_as_open_ai_array())
+                s_prime = env.get_internal_state()
+                log_batch_size = 1000
+                if terminated:
+                    # Make sure we flush the logs to file so we get the last 
+                    # log, it is the most important since it has the reward 
+                    # for winning/losing
+                    log_batch_size = 1
+                save_sars(s, a, env.get_internal_reward() + r, s_prime, "mb_pro_apr_5", log_batch_size)
+                total_reward += r
+                if steps % 200 == 0 or terminated or truncated:
+                    print("\naction " + str([f"{x:+0.2f}" for x in a.get_action_as_open_ai_array()]))
+                    print(f"step {steps} total_reward {total_reward:+0.2f}")
+                steps += 1
+
+                # Restart after 5000 iterations
+                if steps == 5000:
+                    terminated = True
+                
+                if terminated or truncated or restart or quit:
                     quit = True
-
-            if event.type == pygame.KEYUP:
-                if event.key == pygame.K_LEFT:
-                    a[0] = 0
-                if event.key == pygame.K_RIGHT:
-                    a[0] = 0
-                if event.key == pygame.K_UP:
-                    a[1] = 0
-                if event.key == pygame.K_LSHIFT:
-                    a[2] = 0
-                if event.key == pygame.K_DOWN:
-                    a[3] = 0
-
-            if event.type == pygame.QUIT:
-                quit = True
-
-    env = RobotObstacles(render_mode="human")
-
-    quit = False
-    while not quit:
-        env.reset()
-        total_reward = 0.0
-        steps = 0
-        restart = False
-        previousState = None
-        while True:
-            s = env.get_internal_state()
-            a = policy.random_move(s)
-            new_pixel_values, r, terminated, truncated, info = env.step(a)
-            s_prime = env.get_internal_state()
-            save_sars(s, a, r, s_prime, "v_one.log")
-            total_reward += r
-            if steps % 200 == 0 or terminated or truncated:
-                print("\naction " + str([f"{x:+0.2f}" for x in a]))
-                print(f"step {steps} total_reward {total_reward:+0.2f}")
-            steps += 1
-            if terminated or truncated or restart or quit:
-                quit = True
-                break
-    env.close()
+                    break
+        env.close()
 
 
 if __name__ == "__main__":

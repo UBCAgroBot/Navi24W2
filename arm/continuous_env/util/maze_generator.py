@@ -88,7 +88,9 @@ def _maze_generator_attempt(
     Returns:
         list[list[int]]: 2D list representing the generated maze.
     """
-    random.seed(random_seed)
+    maze_rng = random.Random(random_seed)
+    robot_rng = random.Random()
+
     x, y = dims
     maze: list[list[int]] = [[GridTile.WALL.value] * y for _ in range(x)]
 
@@ -115,28 +117,28 @@ def _maze_generator_attempt(
             ):
                 valid_dirs.append({"mndist": min_indx, "coords": (nx, ny)})
 
-        random.shuffle(valid_dirs)
+        maze_rng.shuffle(valid_dirs)
         for dir in valid_dirs:
             nx, ny = dir["coords"]
-            rngdist = dir["mndist"] - random.randint(0, 1)
+            rngdist = dir["mndist"] - maze_rng.randint(0, 1)
             for i in range(rngdist):
                 maze[curx + i * nx][cury + i * ny] = GridTile.FLOOR.value
             _dfs((curx + rngdist * nx, cury + rngdist * ny))
             depth -= 1
 
-    rx, ry = random.randint(0, x - 1), random.randint(0, y - 1)
+    rx, ry = maze_rng.randint(0, x - 1), maze_rng.randint(0, y - 1)
     _dfs((rx, ry))
     maze = _maze_smoothing(maze, smoothness=smoothness)
 
-    def _place_random_tile(tile_value: int) -> None:
+    def _place_random_tile(tile_value: int, random_generator) -> None:
         """Places a random tile of the specified value in the maze."""
-        rx, ry = random.randint(0, x - 1), random.randint(0, y - 1)
+        rx, ry = random_generator.randint(0, x - 1), random_generator.randint(0, y - 1)
         while maze[rx][ry] != GridTile.FLOOR.value:
-            rx, ry = random.randint(0, x - 1), random.randint(0, y - 1)
+            rx, ry = random_generator.randint(0, x - 1), random_generator.randint(0, y - 1)
         maze[rx][ry] = tile_value
 
-    _place_random_tile(GridTile.ROBOT.value)
-    _place_random_tile(GridTile.TARGET.value)
+    _place_random_tile(GridTile.ROBOT.value, robot_rng)
+    _place_random_tile(GridTile.TARGET.value, maze_rng)
     return maze
 
 

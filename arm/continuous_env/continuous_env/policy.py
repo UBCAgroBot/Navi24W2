@@ -5,13 +5,24 @@ from enum import Enum
 from dataclasses import dataclass
 
 class Direction(Enum):
-	LEFT = [-0.5, 0, 0, 0]
-	RIGHT = [0.5, 0, 0, 0]
-	NO_ANGLE = [0, 0, 0, 0]
+	LEFT = [-0.01, 0, 0, 0]
+	RIGHT = [0.01, 0, 0, 0]
+
+def policy_direction_to_str(d: Direction) -> str:
+	if d == Direction.LEFT:
+		return "LEFT"
+	else:
+		return "RIGHT"
 
 class Speed(Enum):
 	FORWARD = [0, 0.01, 0, 0]
 	BACKWARDS = [0, 0, 0, 0.01]
+
+def policy_speed_to_str(s: Speed) -> str:
+	if s == Speed.FORWARD:
+		return "FORWARD"
+	else:
+		return "BACKWARDS"
 
 @dataclass
 class Action:
@@ -97,7 +108,7 @@ def straight_line(internal_state: list[list[int]]|None) -> npt.NDArray[np.float3
 
 
 
-def random_move(internal_state: list[list[int]]|None) -> npt.NDArray[np.float32]:
+def random_move(internal_state: list[list[int]]|None) -> Action:
 	"""
 	Returns a numpy array [w, x, y, z] where:
 		w [-1, 1]: Turning direction, -1 is left, 1 is right
@@ -110,9 +121,9 @@ def random_move(internal_state: list[list[int]]|None) -> npt.NDArray[np.float32]
 	global rand_direction
 	global rand_speed
 
-	if internal_state == None:
+	if internal_state is None:
 		print("Internal state is none, returning early")
-		return np.array([0.0, 0.0, 0.0, 0.0], dtype=float)
+		return Action(direction=Direction.LEFT, speed=Speed.FORWARD)
 
 	robot_pos = None
 	for y in range(len(internal_state)):
@@ -120,9 +131,9 @@ def random_move(internal_state: list[list[int]]|None) -> npt.NDArray[np.float32]
 			if internal_state[y][x] == 1:
 				robot_pos = (x, y)
 
-	if robot_pos == None:
+	if robot_pos is None:
 		print("Cound not find robot in internal state, returning early")
-		return np.array([0.0, 0.0, 0.0, 0.0], dtype=float)
+		return Action(direction=Direction.LEFT, speed=Speed.FORWARD)
 
 	if robot_pos == prev_robot_pos:
 		num_frames_not_moved += 1
@@ -140,4 +151,4 @@ def random_move(internal_state: list[list[int]]|None) -> npt.NDArray[np.float32]
 
 	prev_robot_pos = robot_pos
 
-	return rand_action.get_action_as_open_ai_array()
+	return rand_action

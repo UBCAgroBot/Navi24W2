@@ -21,6 +21,8 @@ State prime (s_prime):
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
+import re
+import os
 
 
 @dataclass(frozen=True)
@@ -132,17 +134,33 @@ def do_learning(experiences: list[SARS], discount_factor: float):
 		a_k = 1/get_k(s, a)
 		dc = discount_factor
 		new_q_val = get_q(s, a) + a_k * (r + dc * max(q_vals(s_prime)) - get_q(s, a))
-		print("New q val: ", new_q_val)
 		set_q(s, a, new_q_val)
 
 
 
-def get_file_contents(path: str) -> str:
+def get_file_contents(base_path: str) -> str:
 	"""
 	Returns the first line of the file at path	
 	"""
-	with open(path, "r") as file:
-		return file.readline()
+	LOG_DIR = "logs"
+	pattern = re.compile(rf"{re.escape(base_path)}_(\d+)\.log$")
+	matched_files = []
+	for filename in os.listdir(LOG_DIR):
+		match = pattern.match(filename)
+		if match:
+			index = int(match.group(1))
+			matched_files.append((index, filename))
+
+	matched_files.sort()
+
+	all_contents: str = ""
+
+	for _, filename in matched_files:
+		path = os.path.join(LOG_DIR, filename)
+		with open(path, "r") as file:
+			all_contents += file.readline().strip()
+	
+	return all_contents
 
 
 def parse_experiences(file_contents: str) -> list[SARS]:
@@ -168,8 +186,8 @@ def print_optimal_values():
 	Iterates through all (x, y) states in a 40x40 grid,
 	and prints the maximum Q value for each state.
 	"""
-	for x in range(5):
-		for y in range(5):
+	for x in range(30):
+		for y in range(30):
 			state = State(x, y)
 			values = q_vals(state)
 			max_q = max(values)
@@ -177,11 +195,11 @@ def print_optimal_values():
 		print()
 
 
-path_to_experiences = './logs/v_one.log'
+log_base_name = 'mb_pro_apr_5'
 discount_factor = 0.9
 Q = defaultdict(float)
 K = defaultdict(int)
-experiences_file_contents = get_file_contents(path_to_experiences)
+experiences_file_contents = get_file_contents(log_base_name)
 
 experiences = parse_experiences(experiences_file_contents)
 do_learning(experiences, discount_factor)
